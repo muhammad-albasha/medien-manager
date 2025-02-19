@@ -10,17 +10,47 @@
 
 <div class="container mt-5">
     <h1 class="text-center mb-4">📂 Medien Manager</h1>
-    <div class="d-flex justify-content-center mb-3">
-        <a href="/medien/upload" class="btn btn-primary">+ Datei hochladen</a>
+
+    <!-- Zentrierter Upload-Button -->
+    <div class="d-flex justify-content-center mb-4">
+        <a href="/medien/upload" class="btn btn-primary btn-lg">+ Datei hochladen</a>
     </div>
 
     <div class="row">
         <div class="col-md-4 mb-3" th:each="media : ${medien}">
             <div class="card shadow-sm">
                 <div class="text-center">
-                    <img class="card-img-top" th:src="${media.url}" alt="Bild"
-                         style="height: 200px; object-fit: contain; display: block; margin: auto;">
+                    <!-- Bild anzeigen -->
+                    <img th:if="${media.mimeType.startsWith('image/')}"
+                         th:src="${media.url}"
+                         class="card-img-top"
+                         style="height: 200px; object-fit: contain;">
+
+                    <!-- Video anzeigen -->
+                    <video th:if="${media.mimeType.startsWith('video/')}"
+                           controls
+                           class="card-img-top"
+                           style="height: 200px; width: 100%; object-fit: contain;">
+                        <source th:src="${media.url}" th:type="${media.mimeType}">
+                        Dein Browser unterstützt kein Video-Tag.
+                    </video>
+
+                    <!-- HTML-Dateien anzeigen -->
+                    <iframe th:if="${media.mimeType == 'text/html'}"
+                            th:src="${media.url}"
+                            class="card-img-top"
+                            style="height: 200px; width: 100%; border: none;">
+                    </iframe>
+
+                    <!-- Falls Datei unbekannt ist -->
+                    <a th:if="${!(media.mimeType.startsWith('image/') || media.mimeType.startsWith('video/') || media.mimeType == 'text/html')}"
+                       th:href="${media.url}"
+                       class="btn btn-secondary mt-3"
+                       download>
+                        📄 Datei herunterladen
+                    </a>
                 </div>
+
                 <div class="card-body text-center">
                     <h5 class="card-title" th:text="${media.name}"></h5>
                     <a class="btn btn-danger btn-sm" th:href="@{/medien/delete/{id}(id=${media.id})}">🗑️ Löschen</a>

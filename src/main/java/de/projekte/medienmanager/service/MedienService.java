@@ -7,9 +7,11 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class MedienService {
@@ -33,10 +35,17 @@ public class MedienService {
         // Datei speichern
         file.transferTo(filePath.toFile());
 
+        // MIME-Type ermitteln
+        String mimeType = Files.probeContentType(filePath);
+        if (mimeType == null) {
+            mimeType = "unknown";
+        }
+
         // In der Datenbank speichern
         MedienDatei media = new MedienDatei();
         media.setName(fileName);
-        media.setUrl("/uploads/" + fileName); // URL zum Bild setzen
+        media.setUrl("/uploads/" + fileName);
+        media.setMimeType(mimeType);
         return medienRepository.save(media);
     }
 
@@ -45,6 +54,24 @@ public class MedienService {
     }
 
     public void deleteMedia(Long id) {
-        medienRepository.deleteById(id);
+        Optional<MedienDatei> mediaOptional = medienRepository.findById(id);
+
+        if (mediaOptional.isPresent()) {
+            MedienDatei media = mediaOptional.get();
+
+            // Datei-Pfad ermitteln
+            Path filePath = Paths.get(UPLOAD_DIR, media.getName());
+            File file = filePath.toFile();
+
+            // Datei löschen
+            if (file.exists() && file.delete()) {
+                System.out.println("✅ Datei gelöscht: " + file.getAbsolutePath());
+            } else {
+                System.out.println("⚠ Datei nicht gefunden oder konnte nicht gelöscht werden!");
+            }
+
+            // Datenbank-Eintrag löschen
+            medienRepository.deleteById(id);
+        }
     }
 }

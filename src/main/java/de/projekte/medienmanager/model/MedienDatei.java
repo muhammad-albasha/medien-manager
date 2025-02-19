@@ -1,12 +1,12 @@
 package de.projekte.medienmanager.model;
 
 import jakarta.persistence.*;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
 @Entity
-@Data
+@Getter
+@Setter
 public class MedienDatei {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -14,4 +14,5 @@ public class MedienDatei {
 
     private String name;
     private String url;
+    private String mimeType; // Dateityp speichern
 }
